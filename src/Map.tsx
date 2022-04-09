@@ -210,7 +210,7 @@ const Component = (props: Props) => {
           <tr><th>Latitude</th><td>{lat}</td></tr>
           <tr><th>Longitude</th><td>{lng}</td></tr>
           <tr><th>Altitude</th><td>{new Intl.NumberFormat().format(Math.round(alt))}m</td></tr>
-          <tr><th>Tile</th><td>{tilenum}</td></tr>
+          <tr><th>ZFXY</th><td>{tilenum}</td></tr>
           <tr><th>ID</th><td>{zfxy}</td></tr>
         </tbody>
         </table>
