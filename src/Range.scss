@@ -1,0 +1,41 @@
+#range-container
+{
+  height: 34px;
+  position: relative;
+
+  div
+  {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+  }
+
+  input[type=range]
+  {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  span
+  {
+    position: absolute;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+    font-size: 14px;
+    top: 0;
+    left: 0;
+    display: block;
+    background-color: #1D4CD6;
+    transform: translate(0, -50%);
+    border: 2px solid #FFFFFF;
+    text-align: center;
+    pointer-events: none;
+    z-index: 99;
+  }
+}

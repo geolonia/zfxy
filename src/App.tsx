@@ -1,24 +1,20 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-function App() {
+import Map from './Map'
+import Range from './Range'
+
+import './App.scss';
+
+const defaultResolution = 10
+
+const App = () => {
+  const [resolution, setResolution] = React.useState<number>(defaultResolution)
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Map className="map" resolution={resolution} />
+      <Range className="range" callback={setResolution} value={resolution} />
+      <div id="loading">Loading...</div>
     </div>
   );
 }

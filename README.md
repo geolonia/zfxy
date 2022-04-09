@@ -1,46 +1,23 @@
-# Getting Started with Create React App
+# zfxy デモ
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+これは、空間IDの仕様を検討するための PoC であるため、実際の ID は全く異なる仕様となる可能性があります。
 
-## Available Scripts
+![](https://www.evernote.com/l/ABVXpdgqPOVEibitac3gXk71ftO99It-pecB/image.png)
 
-In the project directory, you can run:
+https://geolonia.github.io/zfxy/
 
-### `npm start`
+* 飛行機のアイコンをクリックすると、その飛行機の座標及び高度に基づいた空間IDをポップアップで表示します。
+* 空間IDは実際のズームレベルよりも4つ多いズームレベルで算出しています。
+* 地図上でマウスを動かすと空間IDに対応したバウンディングボックスが表示されます。地図のズームレベルにあわせて ID の詳細度が変わる様子が見られると思います。
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```
+git clone git@github.com:geolonia/zfxy.git
+npm install
+npm start
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+To build:
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+npm run build
+```
