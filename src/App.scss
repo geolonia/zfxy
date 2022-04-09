@@ -50,3 +50,8 @@ html, body, .map
     padding: 4px 8px;
   }
 }
+
+.maplibregl-popup
+{
+  max-width: 480px !important;
+}
