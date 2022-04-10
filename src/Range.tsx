@@ -2,6 +2,7 @@ import React from 'react';
 import './Range.scss'
 
 interface Props {
+  id?: string;
   className?: string;
   value: number;
   onChange: Function;
@@ -46,7 +47,7 @@ const Component = (props: Props) => {
   });
 
   return (
-    <div className={props.className}>
+    <div id={props.id} className={props.className}>
       <div id="reat-range-container">
         <div><input type="range" ref={rangeRef} min={props.min} max={props.max} defaultValue={props.value} onChange={onchange} /></div>
         <div><span ref={valueRef}>{range}</span></div>
