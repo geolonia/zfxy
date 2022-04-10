@@ -13,8 +13,9 @@ declare global {
 }
 
 interface Props {
-    className?: string;
-    resolution: number;
+  id?: string;
+  className?: string;
+  resolution: number;
 }
 
 const interval = 30000
@@ -204,7 +205,7 @@ const Component = (props: Props) => {
 
   return (
     <>
-      <div className={props.className} ref={mapContainer} data-navigation-control="on" data-gesture-handling="off"></div>
+      <div id={props.id} className={props.className} ref={mapContainer} data-navigation-control="on" data-gesture-handling="off"></div>
       <div ref={popupContainer} style={{display: "none"}}>
         <table className="popup-table"><tbody>
           <tr><th>Latitude</th><td>{lat}</td></tr>

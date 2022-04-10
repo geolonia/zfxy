@@ -12,7 +12,7 @@ const App = () => {
 
   return (
     <div className="App">
-      <Map className="map" resolution={resolution} />
+      <Map id="map" resolution={resolution} />
       <Range className="range" callback={setResolution} value={resolution} />
       <div id="loading">Loading...</div>
     </div>
