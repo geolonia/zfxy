@@ -1,4 +1,4 @@
-html
+html, body
 {
   height: 100vh;
   width: 100vw;
@@ -6,13 +6,19 @@ html
   margin: 0;
 }
 
-body, .map
-{
-  min-height: 100vh;
-  width: 100vw;
-  padding: 0;
-  margin: 0;
+@supports (-webkit-touch-callout: none) {
+  html, body
+  {
+    height: -webkit-fill-available;
+  }
 }
+
+#root, .App, .map
+{
+  width: 100%;
+  height: 100%;
+}
+
 
 #loading
 {
@@ -63,15 +69,4 @@ body, .map
 .maplibregl-popup
 {
   max-width: 480px !important;
-}
-
-@supports (-webkit-touch-callout: none) {
-  html{
-    height: -webkit-fill-available;
-  }
-
-  body {
-    min-height: 100vh;
-    height: -webkit-fill-available;
-  }
 }
