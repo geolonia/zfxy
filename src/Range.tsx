@@ -10,12 +10,16 @@ interface Props {
 const min = 0
 const max = 25
 
+// @ts-ignore
+let timer
+
 const Component = (props: Props) => {
   const rangeRef = React.useRef<HTMLInputElement>(null)
   const valueRef = React.useRef<HTMLSpanElement>(null)
 
   const [range, setRange] = React.useState<number>(props.value)
   const [rect, setRect] = React.useState<DOMRect>()
+  const [windowWidth, setWindowWidth] = React.useState<number>(window.innerWidth)
 
   React.useEffect(() => {
     if (! rangeRef.current) {
@@ -24,7 +28,7 @@ const Component = (props: Props) => {
 
     const rect = rangeRef.current.getBoundingClientRect()
     setRect(rect)
-  }, [rangeRef])
+  }, [rangeRef, windowWidth])
 
   React.useEffect(() => {
     if (! valueRef.current || ! rect) {
@@ -40,6 +44,10 @@ const Component = (props: Props) => {
     props.callback(Number(event.target.value))
     setRange(Number(event.target.value))
   }
+
+  window.addEventListener("resize", function(event) {
+    setWindowWidth(window.innerWidth)
+  });
 
   return (
     <div className={props.className}>
