@@ -10,10 +10,14 @@ const defaultResolution = 10
 const App = () => {
   const [resolution, setResolution] = React.useState<number>(defaultResolution)
 
+  const onChangeRange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setResolution(Number(event.target.value))
+  }
+
   return (
     <div className="App">
       <Map id="map" resolution={resolution} />
-      <Range className="range" callback={setResolution} value={resolution} />
+      <Range className="range" onChange={onChangeRange} min={0} max={25} value={resolution} />
       <div id="loading">Loading...</div>
     </div>
   );

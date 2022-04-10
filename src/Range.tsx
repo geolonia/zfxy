@@ -4,14 +4,10 @@ import './Range.scss'
 interface Props {
   className?: string;
   value: number;
-  callback: Function;
+  onChange: Function;
+  min: number;
+  max: number;
 }
-
-const min = 0
-const max = 25
-
-// @ts-ignore
-let timer
 
 const Component = (props: Props) => {
   const rangeRef = React.useRef<HTMLInputElement>(null)
@@ -36,12 +32,12 @@ const Component = (props: Props) => {
     }
 
     const valueRefRect = valueRef.current.getBoundingClientRect()
-    const offset = ((rect.width - valueRefRect.width) / max) * range
+    const offset = ((rect.width - valueRefRect.width) / (props.max - props.min)) * (range - props.min)
     valueRef.current.style.left = `${rect.x + offset}px`
   }, [range, valueRef, rect])
 
   const onchange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    props.callback(Number(event.target.value))
+    props.onChange(event)
     setRange(Number(event.target.value))
   }
 
@@ -51,8 +47,8 @@ const Component = (props: Props) => {
 
   return (
     <div className={props.className}>
-      <div id="range-container">
-        <div><input type="range" ref={rangeRef} min={min} max={max} defaultValue={props.value} onChange={onchange} /></div>
+      <div id="reat-range-container">
+        <div><input type="range" ref={rangeRef} min={props.min} max={props.max} defaultValue={props.value} onChange={onchange} /></div>
         <div><span ref={valueRef}>{range}</span></div>
       </div>
     </div>
