@@ -20,6 +20,7 @@ interface Props {
 
 const interval = 30000
 
+// @ts-ignore
 const popup = new window.geolonia.Popup({
   closeButton: false,
   closeOnClick: true,
