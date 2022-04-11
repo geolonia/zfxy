@@ -201,7 +201,7 @@ const Component = (props: Props) => {
         setMap(map)
       }) // End `map.loadImage()`
     })
-  }, [mapContainer])
+  }, [mapContainer, handleAirplaneClick])
 
   return (
     <>

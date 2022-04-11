@@ -26,6 +26,7 @@ export function generate(tile: ZFXYTile): string {
     const parent = getParent(thisTile);
     const childrenOfParent = getChildren(parent);
     const positionInParent = childrenOfParent.findIndex(
+      // eslint-disable-next-line no-loop-func
       ([xf, xx, xy, xz]) => xf === f && xx === x && xy === y && xz === z
     );
     out = positionInParent.toString(8) + out;

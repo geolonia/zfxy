@@ -35,7 +35,7 @@ const Component = (props: Props) => {
     const valueRefRect = valueRef.current.getBoundingClientRect()
     const offset = ((rect.width - valueRefRect.width) / (props.max - props.min)) * (range - props.min)
     valueRef.current.style.left = `${rect.x + offset}px`
-  }, [range, valueRef, rect])
+  }, [range, valueRef, rect, props.max, props.min])
 
   const onchange = (event: React.ChangeEvent<HTMLInputElement>) => {
     props.onChange(event)
