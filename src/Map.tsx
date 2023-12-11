@@ -1,5 +1,5 @@
 import { Space } from '@spatial-id/javascript-sdk';
-import React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import getData from './lib/getdata';
 import img from './lib/plane.png'
@@ -26,15 +26,15 @@ const popup = new window.geolonia.Popup({
 })
 
 const Component = (props: Props) => {
-  const mapContainer = React.useRef<HTMLDivElement>(null)
-  const popupContainer = React.useRef<HTMLDivElement>(null)
+  const mapContainer = useRef<HTMLDivElement>(null)
+  const popupContainer = useRef<HTMLDivElement>(null)
 
-  const [map, setMap] = React.useState<any>()
-  const [lat, setLat] = React.useState<number>(0)
-  const [lng, setLng] = React.useState<number>(0)
-  const [alt, setAlt] = React.useState<number>(0)
-  const [tilenum, setTileNum] = React.useState<string>()
-  const [zfxy, setZfxy] = React.useState<string>("0")
+  const [map, setMap] = useState<any>()
+  const [lat, setLat] = useState<number>(0)
+  const [lng, setLng] = useState<number>(0)
+  const [alt, setAlt] = useState<number>(0)
+  const [tilenum, setTileNum] = useState<string>()
+  const [zfxy, setZfxy] = useState<string>("0")
 
   const showBbox = (map: any, geom: any) => {
     const geojson = {
@@ -51,7 +51,7 @@ const Component = (props: Props) => {
     map.getSource("bbox").setData(geojson);
   }
 
-  const handleAirplaneClick = React.useCallback((event: any) => {
+  const handleAirplaneClick = useCallback((event: any) => {
     if (!popupContainer.current) {
       return
     }
@@ -81,7 +81,7 @@ const Component = (props: Props) => {
     showBbox(event.target, space.toGeoJSON())
   }, [props.resolution])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (! map) {
       return
     }
@@ -93,7 +93,7 @@ const Component = (props: Props) => {
     }
   }, [map, handleAirplaneClick])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (! popupContainer.current || ! map) {
       return
     }
@@ -109,7 +109,7 @@ const Component = (props: Props) => {
     showBbox(map, space.toGeoJSON())
   }, [props.resolution, lng, lat, alt, map])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (! popupContainer.current) {
       return
     }
@@ -117,12 +117,14 @@ const Component = (props: Props) => {
     popup.setHTML(popupContainer.current.innerHTML)
   }, [tilenum, zfxy])
 
-  React.useEffect(() => {
+  useEffect(() => {
     const map = new window.geolonia.Map({
       container: mapContainer.current,
       style: style,
       hash: true,
-    })
+    });
+
+    (window as any)._mainMap = map;
 
     map.on("load", () => {
       map.loadImage(img, async (error: any, image: HTMLImageElement) => {
@@ -140,7 +142,7 @@ const Component = (props: Props) => {
 
         setInterval(async () => {
           const data = await getData()
-          map.getSource("opensky-network").setData(data)
+          map.getSource("opensky-network").updateData(data)
         }, interval)
 
         // クラスターをクリックで展開
@@ -174,10 +176,10 @@ const Component = (props: Props) => {
           map.getCanvas().style.cursor = "all-scroll"
         })
 
-        map.on('move', () => {
-          const bearing = 360 - map.getBearing()
-          map.setLayoutProperty('opensky-network-airplanes', 'icon-rotate', ['+', ['get', 'degree'], bearing])
-        })
+        // map.on('move', () => {
+        //   const bearing = 360 - map.getBearing()
+        //   map.setLayoutProperty('opensky-network-airplanes', 'icon-rotate', ['+', ['get', 'track'], bearing])
+        // })
 
         map.on("click", "opensky-network-airplanes", handleAirplaneClick)
 
