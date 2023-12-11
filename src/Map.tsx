@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import getData from './lib/getdata';
 import img from './lib/plane.png'
 import style from './lib/style.json'
+import { Polygon } from 'geojson';
 
 declare global {
   interface Window {
@@ -131,19 +132,41 @@ const Component = (props: Props) => {
         if (error) throw error;
 
         map.addImage("icon", image)
-        const data = await getData()
 
-        const loading = document.getElementById('loading')
-        if (loading) {
-          loading.style.display = 'none'
-        }
+        let timeoutId: number | undefined = undefined;
 
-        map.getSource("opensky-network").setData(data)
+        const performLoad = async () => {
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+            timeoutId = undefined;
+          }
 
-        setInterval(async () => {
-          const data = await getData()
-          map.getSource("opensky-network").updateData(data)
-        }, interval)
+          const currentBounds = map.getBounds();
+          const boundingGeom: Polygon = {
+            type: "Polygon",
+            coordinates: [
+              [
+                [currentBounds.getWest(), currentBounds.getNorth()],
+                [currentBounds.getEast(), currentBounds.getNorth()],
+                [currentBounds.getEast(), currentBounds.getSouth()],
+                [currentBounds.getWest(), currentBounds.getSouth()],
+                [currentBounds.getWest(), currentBounds.getNorth()],
+              ],
+            ]
+          };
+          const spaces = Space.spacesForGeometry(boundingGeom, Math.max(Math.ceil(map.getZoom()) - 1, 1));
+          const spaceTilehashes = Array.from(new Set(spaces.map((space) => space.tilehash)));
+          console.log(spaceTilehashes);
+          const data = await getData(spaceTilehashes);
+          const loading = document.getElementById('loading')
+          if (loading) {
+            loading.style.display = 'none'
+          }
+          map.getSource("opensky-network").updateData({ add: data });
+          timeoutId = window.setTimeout(performLoad, interval);
+        };
+
+        performLoad();
 
         // クラスターをクリックで展開
         map.on("click", "clusters", (event: any) => {
@@ -176,10 +199,9 @@ const Component = (props: Props) => {
           map.getCanvas().style.cursor = "all-scroll"
         })
 
-        // map.on('move', () => {
-        //   const bearing = 360 - map.getBearing()
-        //   map.setLayoutProperty('opensky-network-airplanes', 'icon-rotate', ['+', ['get', 'track'], bearing])
-        // })
+        map.on('moveend', () => {
+          performLoad();
+        })
 
         map.on("click", "opensky-network-airplanes", handleAirplaneClick)
 
