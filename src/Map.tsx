@@ -18,7 +18,7 @@ interface Props {
   resolution: number;
 }
 
-const interval = 30000
+const interval = 2_500;
 
 // @ts-ignore
 const popup = new window.geolonia.Popup({
@@ -123,6 +123,8 @@ const Component = (props: Props) => {
       container: mapContainer.current,
       style: style,
       hash: true,
+      center: [139.3448, 35.4209],
+      zoom: 8,
     });
 
     (window as any)._mainMap = map;
