@@ -1,39 +1,14 @@
-import { Feature, GeoJSON } from 'geojson'
+import { Feature } from 'geojson'
 
-const DATA_URL = "https://opensky-network.org/api/states/all";
+const DATA_URL = "https://u6bd7qvpljo3wvnfr3g3gcij7m0ujlkm.lambda-url.ap-northeast-1.on.aws";
 
-const getData = async () => {
-  const res = await fetch(DATA_URL)
-  const json = await res.json()
-  const data = json.states
-
-  const geojson:GeoJSON = {
-    "type": "FeatureCollection",
-    "features": []
-  }
-
-  for (let i = 0; i < data.length; i++) {
-    const feature:Feature = {
-      "type": "Feature",
-      "properties": {
-        callsign: data[i][1],
-        country: data[i][2],
-        degree: data[i][10],
-        altitude: data[i][13]
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          data[i][5],
-          data[i][6]
-        ]
-      }
-    }
-
-    geojson.features.push(feature)
-  }
-
-  return geojson
+async function getData(tilehashes: string[]): Promise<Feature[]> {
+  const allRes = await Promise.all(
+    tilehashes.map(tilehash => fetch(DATA_URL + "/" + tilehash).then(res => res.json()))
+  );
+  return allRes.reduce((acc, cur) => {
+    return acc.concat(cur.features);
+  }, []);
 }
 
-export default getData
+export default getData;

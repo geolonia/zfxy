@@ -1,10 +1,10 @@
-import React from 'react';
-import { pointToTile, tileToBBOX } from '@mapbox/tilebelt'
+import { Space } from '@spatial-id/javascript-sdk';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { generate } from './lib/zfxy'
 import getData from './lib/getdata';
 import img from './lib/plane.png'
 import style from './lib/style.json'
+import { Polygon } from 'geojson';
 
 declare global {
   interface Window {
@@ -27,35 +27,24 @@ const popup = new window.geolonia.Popup({
 })
 
 const Component = (props: Props) => {
-  const mapContainer = React.useRef<HTMLDivElement>(null)
-  const popupContainer = React.useRef<HTMLDivElement>(null)
+  const mapContainer = useRef<HTMLDivElement>(null)
+  const popupContainer = useRef<HTMLDivElement>(null)
 
-  const [map, setMap] = React.useState<any>()
-  const [lat, setLat] = React.useState<number>(0)
-  const [lng, setLng] = React.useState<number>(0)
-  const [alt, setAlt] = React.useState<number>(0)
-  const [tilenum, setTileNum] = React.useState<string>()
-  const [zfxy, setZfxy] = React.useState<string>("0")
+  const [map, setMap] = useState<any>()
+  const [lat, setLat] = useState<number>(0)
+  const [lng, setLng] = useState<number>(0)
+  const [alt, setAlt] = useState<number>(0)
+  const [tilenum, setTileNum] = useState<string>()
+  const [zfxy, setZfxy] = useState<string>("0")
 
-  const showBbox = (map: any, bbox: number[]) => {
+  const showBbox = (map: any, geom: any) => {
     const geojson = {
       "type": "FeatureCollection",
       "features": [
         {
           "type": "Feature",
           "properties": {},
-          "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-              [
-                [bbox[0], bbox[1]],
-                [bbox[2], bbox[1]],
-                [bbox[2], bbox[3]],
-                [bbox[0], bbox[3]],
-                [bbox[0], bbox[1]]
-              ]
-            ]
-          }
+          "geometry": geom
         }
       ]
     }
@@ -63,25 +52,22 @@ const Component = (props: Props) => {
     map.getSource("bbox").setData(geojson);
   }
 
-  const handleAirplaneClick = React.useCallback((event: any) => {
-    if (! popupContainer.current) {
+  const handleAirplaneClick = useCallback((event: any) => {
+    if (!popupContainer.current) {
       return
     }
 
-    const lnglat = event.features[0].geometry.coordinates
-    const [lng, lat] = Object.values(lnglat)
-    const tile = pointToTile(lng, lat, props.resolution)
-    const bbox = tileToBBOX(tile)
+    const [lng, lat] = event.features[0].geometry.coordinates as [number, number]
 
     let altitude = 0
     if (0 <= event.features[0].properties.altitude) {
       altitude = event.features[0].properties.altitude
     }
 
-    const f = Math.floor( altitude / ( 2 ** 25 / 2 ** props.resolution ) )
+    const space = new Space({lng, lat, alt: altitude}, props.resolution)
 
-    const tilenum = `/${tile[2]}/${f}/${tile[0]}/${tile[1]}`
-    const zfxy = generate([tile[2], f, tile[0], tile[1]])
+    const tilenum = space.zfxyStr
+    const zfxy = space.tilehash
 
     setLat(lat)
     setLng(lng)
@@ -89,14 +75,14 @@ const Component = (props: Props) => {
     setTileNum(tilenum)
     setZfxy(zfxy)
 
-    popup.setLngLat(lnglat)
+    popup.setLngLat([lng, lat])
       .setHTML(popupContainer.current.innerHTML)
       .addTo(event.target)
 
-    showBbox(event.target, bbox)
+    showBbox(event.target, space.toGeoJSON())
   }, [props.resolution])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (! map) {
       return
     }
@@ -108,26 +94,23 @@ const Component = (props: Props) => {
     }
   }, [map, handleAirplaneClick])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (! popupContainer.current || ! map) {
       return
     }
 
-    const tile = pointToTile(lng, lat, props.resolution)
-    const bbox = tileToBBOX(tile)
+    const space = new Space({lng, lat, alt}, props.resolution)
 
-    const f = Math.floor( alt / ( 2 ** 25 / 2 ** props.resolution ) )
-
-    const tilenum = `/${tile[2]}/${f}/${tile[0]}/${tile[1]}`
-    const zfxy = generate([tile[2], f, tile[0], tile[1]])
+    const tilenum = space.zfxyStr
+    const zfxy = space.tilehash
 
     setTileNum(tilenum)
     setZfxy(zfxy)
 
-    showBbox(map, bbox)
+    showBbox(map, space.toGeoJSON())
   }, [props.resolution, lng, lat, alt, map])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (! popupContainer.current) {
       return
     }
@@ -135,31 +118,55 @@ const Component = (props: Props) => {
     popup.setHTML(popupContainer.current.innerHTML)
   }, [tilenum, zfxy])
 
-  React.useEffect(() => {
+  useEffect(() => {
     const map = new window.geolonia.Map({
       container: mapContainer.current,
       style: style,
       hash: true,
-    })
+    });
+
+    (window as any)._mainMap = map;
 
     map.on("load", () => {
       map.loadImage(img, async (error: any, image: HTMLImageElement) => {
         if (error) throw error;
 
         map.addImage("icon", image)
-        const data = await getData()
 
-        const loading = document.getElementById('loading')
-        if (loading) {
-          loading.style.display = 'none'
-        }
+        let timeoutId: number | undefined = undefined;
 
-        map.getSource("opensky-network").setData(data)
+        const performLoad = async () => {
+          if (timeoutId) {
+            window.clearTimeout(timeoutId);
+            timeoutId = undefined;
+          }
 
-        setInterval(async () => {
-          const data = await getData()
-          map.getSource("opensky-network").setData(data)
-        }, interval)
+          const currentBounds = map.getBounds();
+          const boundingGeom: Polygon = {
+            type: "Polygon",
+            coordinates: [
+              [
+                [currentBounds.getWest(), currentBounds.getNorth()],
+                [currentBounds.getEast(), currentBounds.getNorth()],
+                [currentBounds.getEast(), currentBounds.getSouth()],
+                [currentBounds.getWest(), currentBounds.getSouth()],
+                [currentBounds.getWest(), currentBounds.getNorth()],
+              ],
+            ]
+          };
+          const spaces = Space.spacesForGeometry(boundingGeom, Math.max(Math.ceil(map.getZoom()) - 1, 1));
+          const spaceTilehashes = Array.from(new Set(spaces.map((space) => space.tilehash)));
+          console.log(spaceTilehashes);
+          const data = await getData(spaceTilehashes);
+          const loading = document.getElementById('loading')
+          if (loading) {
+            loading.style.display = 'none'
+          }
+          map.getSource("opensky-network").updateData({ add: data });
+          timeoutId = window.setTimeout(performLoad, interval);
+        };
+
+        performLoad();
 
         // クラスターをクリックで展開
         map.on("click", "clusters", (event: any) => {
@@ -192,9 +199,8 @@ const Component = (props: Props) => {
           map.getCanvas().style.cursor = "all-scroll"
         })
 
-        map.on('move', () => {
-          const bearing = 360 - map.getBearing()
-          map.setLayoutProperty('opensky-network-airplanes', 'icon-rotate', ['+', ['get', 'degree'], bearing])
+        map.on('moveend', () => {
+          performLoad();
         })
 
         map.on("click", "opensky-network-airplanes", handleAirplaneClick)
