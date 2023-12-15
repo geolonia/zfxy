@@ -18,7 +18,7 @@ const App = () => {
     <div className="App">
       <Map id="map" resolution={resolution} />
       <Range className="range" onChange={onChangeRange} min={0} max={30} value={resolution} />
-      <div id="loading">Loading...</div>
+      {/* <div id="loading">Loading...</div> */}
     </div>
   );
 }

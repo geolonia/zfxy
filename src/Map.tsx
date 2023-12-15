@@ -87,10 +87,10 @@ const Component = (props: Props) => {
       return
     }
 
-    map.on("click", "opensky-network-airplanes", handleAirplaneClick)
+    map.on("click", "airplanes-airplanes", handleAirplaneClick)
 
     return () => {
-      map.off("click", "opensky-network-airplanes", handleAirplaneClick)
+      map.off("click", "airplanes-airplanes", handleAirplaneClick)
     }
   }, [map, handleAirplaneClick])
 
@@ -135,53 +135,48 @@ const Component = (props: Props) => {
 
         map.addImage("icon", image)
 
-        let timeoutId: number | undefined = undefined;
+        // let timeoutId: number | undefined = undefined;
 
-        const performLoad = async () => {
-          if (timeoutId) {
-            window.clearTimeout(timeoutId);
-            timeoutId = undefined;
-          }
+        // const performLoad = async () => {
+        //   if (timeoutId) {
+        //     window.clearTimeout(timeoutId);
+        //     timeoutId = undefined;
+        //   }
 
-          const currentBounds = map.getBounds();
-          const boundingGeom: Polygon = {
-            type: "Polygon",
-            coordinates: [
-              [
-                [currentBounds.getWest(), currentBounds.getNorth()],
-                [currentBounds.getEast(), currentBounds.getNorth()],
-                [currentBounds.getEast(), currentBounds.getSouth()],
-                [currentBounds.getWest(), currentBounds.getSouth()],
-                [currentBounds.getWest(), currentBounds.getNorth()],
-              ],
-            ]
-          };
-          const spaces = Space.spacesForGeometry(boundingGeom, Math.max(Math.ceil(map.getZoom()) - 1, 1));
-          const spaceTilehashes = Array.from(new Set(spaces.map((space) => space.tilehash)));
-          console.log(spaceTilehashes);
-          const data = await getData(spaceTilehashes);
-          const loading = document.getElementById('loading')
-          if (loading) {
-            loading.style.display = 'none'
-          }
-          map.getSource("opensky-network").updateData({ add: data });
-          timeoutId = window.setTimeout(performLoad, interval);
-        };
+        //   const currentBounds = map.getBounds();
+        //   const boundingGeom: Polygon = {
+        //     type: "Polygon",
+        //     coordinates: [
+        //       [
+        //         [currentBounds.getWest(), currentBounds.getNorth()],
+        //         [currentBounds.getEast(), currentBounds.getNorth()],
+        //         [currentBounds.getEast(), currentBounds.getSouth()],
+        //         [currentBounds.getWest(), currentBounds.getSouth()],
+        //         [currentBounds.getWest(), currentBounds.getNorth()],
+        //       ],
+        //     ]
+        //   };
+        //   const spaces = Space.spacesForGeometry(boundingGeom, Math.max(Math.ceil(map.getZoom()) - 1, 1));
+        //   const spaceTilehashes = Array.from(new Set(spaces.map((space) => space.tilehash)));
+        //   console.log(spaceTilehashes);
+        //   const data = await getData(spaceTilehashes);
+        //   const loading = document.getElementById('loading')
+        //   if (loading) {
+        //     loading.style.display = 'none'
+        //   }
+        //   map.getSource("opensky-network").updateData({ add: data });
+        //   timeoutId = window.setTimeout(performLoad, interval);
+        // };
 
-        performLoad();
+        // performLoad();
 
         // クラスターをクリックで展開
         map.on("click", "clusters", (event: any) => {
           const features = map.queryRenderedFeatures(event.point, { layers: ["clusters"] });
-          const clusterId = features[0].properties.cluster_id;
-          map.getSource("opensky-network").getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
-            if (err)
-              return;
 
-            map.easeTo({
-              center: features[0].geometry.coordinates,
-              zoom: zoom + 1,
-            });
+          map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: map.getZoom() + 1,
           });
         });
 
@@ -193,19 +188,19 @@ const Component = (props: Props) => {
           map.getCanvas().style.cursor = "all-scroll"
         })
 
-        map.on("mouseover", "opensky-network-airplanes", (event: any) => {
+        map.on("mouseover", "airplanes-airplanes", (event: any) => {
           map.getCanvas().style.cursor = "pointer"
         })
 
-        map.on("mouseleave", "opensky-network-airplanes", (event: any) => {
+        map.on("mouseleave", "airplanes-airplanes", (event: any) => {
           map.getCanvas().style.cursor = "all-scroll"
         })
 
-        map.on('moveend', () => {
-          performLoad();
-        })
+        // map.on('moveend', () => {
+        //   performLoad();
+        // })
 
-        map.on("click", "opensky-network-airplanes", handleAirplaneClick)
+        map.on("click", "airplanes-airplanes", handleAirplaneClick)
 
         setMap(map)
       }) // End `map.loadImage()`
